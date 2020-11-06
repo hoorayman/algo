@@ -74,23 +74,24 @@ func (sll *SLL) Pop() (int, error) {
 func (sll *SLL) Reverse() {
 	if sll.count > 1 { // current node is the node which is to be moved after the root
 		var np *sllNode    // np point to the current node
-		lnp := sll.root    // lnp is a pointer to the node on the left of current node
+		lnp := sll.root    // lnp is a pointer to the node on the left of current node. It is fixed during reversing!
 		np = sll.root.next // the beginning current node pointer is sll.root.next
 
 		for np != nil {
-			p1 := np.next // np.next is to be replaced, so back it up
-			lnp.next = p1
-			p2 := sll.root // sll.root is to be replaced, so back it up
-			sll.root = np  // root point to the current node
-			sll.root.next = p2
-			np = p1
+			next := np.next    // np.next is to be replaced, so back it up
+			lnp.next = np.next // take the current node off the single linked list
+
+			fp := sll.root // back the first node up
+			sll.root = np  // this line and the next line insert the current node after the root
+			np.next = fp
+			np = next
 		}
 	}
 }
 
 // Remove all the node whose value is equal to v
 func (sll *SLL) Remove(v int) {
-	var lnp *sllNode
+	var lnp *sllNode // lnp is a pointer to the node on the left of current node
 	for np := sll.root; np != nil; np = np.next {
 		if np.value == v {
 			if lnp == nil {
