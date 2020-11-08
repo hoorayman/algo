@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-// Queue (FIFO) implemented by array
+// Queue (FIFO) is ring queue implemented by array
 type Queue struct {
 	data          []int
 	capacity      int
