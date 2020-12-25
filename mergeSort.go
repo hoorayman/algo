@@ -6,50 +6,46 @@ import (
 	"time"
 )
 
-func merge(s1, s2 []int) {
-	if len(s1) == 0 || len(s2) == 0 {
-		return
+func mergeSort(a []int) []int {
+	if len(a) > 1 {
+		merge(mergeSort(a[:len(a)/2]), mergeSort(a[len(a)/2:]))
 	}
-	if s1[len(s1)-1] <= s2[0] {
-		return
-	}
-	t := make([]int, len(s1)+len(s2))
-	i, j, x := 0, 0, 0
-	for ; i < len(s1) && j < len(s2); x++ {
-		if s1[i] > s2[j] {
-			t[x] = s2[j]
-			j++
-		} else {
-			t[x] = s1[i]
-			i++
-		}
-	}
-	for ; i < len(s1); x++ {
-		t[x] = s1[i]
-		i++
-	}
-	for ; j < len(s2); x++ {
-		t[x] = s2[j]
-		j++
-	}
-	copy(s1, t[:len(s1)])
-	copy(s2, t[len(s1):])
+	return a
 }
 
-func mergeSort(s []int) []int {
-	d := len(s) / 2
-	if d > 0 {
-		merge(mergeSort(s[:d]), mergeSort(s[d:]))
+func merge(l []int, r []int) {
+	tmp := make([]int, len(l)+len(r))
+	ti, li, ri := 0, 0, 0
+	for ; li < len(l) && ri < len(r); ti++ {
+		if l[li] < r[ri] {
+			tmp[ti] = l[li]
+			li++
+		} else {
+			tmp[ti] = r[ri]
+			ri++
+		}
 	}
-	return s
+	for ; li < len(l); li++ { // if upper for end caused by r run out
+		tmp[ti] = l[li]
+		ti++
+	}
+	for ; ri < len(r); ri++ { // if upper for end caused by l run out
+		tmp[ti] = r[ri]
+		ti++
+	}
+	copy(l, tmp[:len(l)])
+	copy(r, tmp[len(l):])
 }
 
 func main() {
-	s := make([]int, 100000)
-	for i := range s {
-		s[i] = rand.Int()
+	rand.Seed(time.Now().UnixNano())
+	a := make([]int, 100000)
+	for i := range a {
+		a[i] = rand.Intn(20)
 	}
+	// fmt.Println(a)
 	t1 := time.Now()
-	mergeSort(s)
+	mergeSort(a)
 	fmt.Println(time.Now().Sub(t1))
+	// fmt.Println(a)
 }
