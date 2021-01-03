@@ -1,78 +1,75 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"math/rand"
 	"time"
 )
 
-// MinHeap definition
-type MinHeap struct {
+// MaxHeap definition
+// if index begin at 0, left child is 2*i+1, right child is 2*i+2, parent is (i-1)/2
+// if index begin at 1, left child is 2*i(i<<1), right child is 2*i+1(i<<1|1), parent is i/2(i>>1)
+type MaxHeap struct {
 	heap  []int
 	count int
 }
 
-// New constructor
-func New() MinHeap {
-	mh := MinHeap{}
-	return mh
+// NewMaxHeap constructor
+func NewMaxHeap() MaxHeap {
+	return MaxHeap{}
 }
 
 // Size method
-func (mh *MinHeap) Size() int {
+func (mh *MaxHeap) Size() int {
 	return mh.count
 }
 
 // IsEmpty method
-func (mh *MinHeap) IsEmpty() bool {
+func (mh *MaxHeap) IsEmpty() bool {
 	return mh.count == 0
 }
 
 // Push method
-func (mh *MinHeap) Push(element int) {
-	if len(mh.heap) <= mh.count {
-		mh.heap = append(mh.heap, element)
+func (mh *MaxHeap) Push(element int) {
+	mh.heap = append(mh.heap, element)
+	i := mh.count
+	for p := (i - 1) / 2; element > mh.heap[p]; p = (i - 1) / 2 {
+		mh.heap[i], mh.heap[p] = mh.heap[p], mh.heap[i]
+		i = p
 	}
 	mh.count++
-	i := mh.count
-	for i > 1 && mh.heap[i/2-1] > element { // when index begin at 1, parent is i/2
-		mh.heap[i-1], mh.heap[i/2-1] = mh.heap[i/2-1], mh.heap[i-1]
-		i /= 2
-	}
 }
 
-// PopMin method
-func (mh *MinHeap) PopMin() (int, error) {
-	if mh.count <= 0 {
-		return 0, errors.New("pop nil heap")
-	}
-	element := mh.heap[mh.count-1]
-	mh.heap[0], mh.heap[mh.count-1] = mh.heap[mh.count-1], mh.heap[0]
-	mh.count--
-	for i := 1; 2*i <= mh.count; { // when index begin at 1, left child is 2i, right child is 2i+1
-		minChildIndex := 2*i - 1
-		if 2*i+1 <= mh.count && mh.heap[2*i] < mh.heap[2*i-1] {
-			minChildIndex = 2 * i
+// Pop method, pop max of the heap
+func (mh *MaxHeap) Pop() int {
+	mh.heap[0], mh.heap[mh.count-1] = mh.heap[mh.count-1], mh.heap[0] // put max to last
+	mh.count--                                                        // remove max
+	for i := 0; 2*i+1 < mh.count; {                                   // if has at least one child
+		maxChildIndex := 2*i + 1
+		// if has right child
+		// right child is 2*i+2, so is maxChildIndex+1
+		if maxChildIndex+1 < mh.count && mh.heap[maxChildIndex+1] > mh.heap[maxChildIndex] {
+			maxChildIndex = maxChildIndex + 1
 		}
-		if element > mh.heap[minChildIndex] {
-			mh.heap[i-1], mh.heap[minChildIndex] = mh.heap[minChildIndex], mh.heap[i-1]
-			i = minChildIndex + 1
-		} else {
+		if mh.heap[i] >= mh.heap[maxChildIndex] {
 			break
 		}
+		mh.heap[i], mh.heap[maxChildIndex] = mh.heap[maxChildIndex], mh.heap[i]
+		i = maxChildIndex
 	}
-	return mh.heap[mh.count], nil
+	return mh.heap[mh.count]
 }
 
 func main() {
-	mh := New()
+	rand.Seed(time.Now().UnixNano())
+	mh := NewMaxHeap()
 	t1 := time.Now()
-	for i := 0; i < 100000; i++ {
-		mh.Push(rand.Int())
+	for i := 0; i < 10; i++ {
+		mh.Push(rand.Intn(20))
 	}
-	for _, e := mh.PopMin(); e == nil; {
-		_, e = mh.PopMin()
+	for mh.count > 0 {
+		mh.Pop()
 	}
 	fmt.Println(time.Now().Sub(t1))
+	fmt.Println(mh)
 }
