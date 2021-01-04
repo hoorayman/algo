@@ -8,7 +8,7 @@ import (
 
 // MaxHeap definition
 // if index begin at 0, left child is 2*i+1, right child is 2*i+2, parent is (i-1)/2
-// if index begin at 1, left child is 2*i(i<<1), right child is 2*i+1(i<<1|1), parent is i/2(i>>1)
+// if index begin at 1, left child is 2*i(i<<1), right child is 2*i+1(i<<1+1), parent is i/2(i>>1)
 type MaxHeap struct {
 	heap  []int
 	count int
