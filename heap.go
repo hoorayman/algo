@@ -33,43 +33,71 @@ func (mh *MaxHeap) IsEmpty() bool {
 func (mh *MaxHeap) Push(element int) {
 	mh.heap = append(mh.heap, element)
 	i := mh.count
-	for p := (i - 1) / 2; element > mh.heap[p]; p = (i - 1) / 2 {
-		mh.heap[i], mh.heap[p] = mh.heap[p], mh.heap[i]
+	heapInsert(mh.heap, i)
+	mh.count++
+}
+
+func heapInsert(array []int, beginIndex int) { // go up
+	for i, p := beginIndex, (beginIndex-1)/2; array[i] > array[p]; p = (i - 1) / 2 {
+		array[i], array[p] = array[p], array[i]
 		i = p
 	}
-	mh.count++
 }
 
 // Pop method, pop max of the heap
 func (mh *MaxHeap) Pop() int {
 	mh.heap[0], mh.heap[mh.count-1] = mh.heap[mh.count-1], mh.heap[0] // put max to last
 	mh.count--                                                        // remove max
-	for i := 0; 2*i+1 < mh.count; {                                   // if has at least one child
+	heapify(mh.heap, 0, mh.count)
+	return mh.heap[mh.count]
+}
+
+func heapify(array []int, beginIndex int, heapSize int) { // go down
+	for i := beginIndex; 2*i+1 < heapSize; { // at least has a child
 		maxChildIndex := 2*i + 1
-		// if has right child
-		// right child is 2*i+2, so is maxChildIndex+1
-		if maxChildIndex+1 < mh.count && mh.heap[maxChildIndex+1] > mh.heap[maxChildIndex] {
+		if maxChildIndex+1 < heapSize && array[maxChildIndex+1] > array[maxChildIndex] { // if has right child and right child is bigger than left child
 			maxChildIndex = maxChildIndex + 1
 		}
-		if mh.heap[i] >= mh.heap[maxChildIndex] {
+		if array[i] >= array[maxChildIndex] {
 			break
 		}
-		mh.heap[i], mh.heap[maxChildIndex] = mh.heap[maxChildIndex], mh.heap[i]
+		array[i], array[maxChildIndex] = array[maxChildIndex], array[i]
 		i = maxChildIndex
 	}
-	return mh.heap[mh.count]
+}
+
+// Remove method, remove the i-th element of the heap
+func (mh *MaxHeap) Remove(i int) {
+	mh.heap[i], mh.heap[mh.count-1] = mh.heap[mh.count-1], mh.heap[i] // put i-th to last
+	mh.count--                                                        // remove i-th
+	if i >= mh.count {
+		return
+	}
+	heapInsert(mh.heap, i)        // check go up
+	heapify(mh.heap, i, mh.count) // check go down
+	// if go up, go down will not happen. because upper level always >= lower level
+}
+
+// Reassign method, reassign the i-th element with new value
+func (mh *MaxHeap) Reassign(i int, value int) {
+	mh.heap[i] = value
+	heapInsert(mh.heap, i)        // check go up
+	heapify(mh.heap, i, mh.count) // check go down
+	// if go up, go down will not happen. because upper level always >= lower level
 }
 
 func main() {
 	rand.Seed(time.Now().UnixNano())
 	mh := NewMaxHeap()
 	t1 := time.Now()
-	for i := 0; i < 10; i++ {
+	for i := 0; i < 5; i++ {
 		mh.Push(rand.Intn(20))
 	}
-	for mh.count > 0 {
-		mh.Pop()
-	}
+	fmt.Println(mh)
+	// for mh.count > 0 {
+	// 	mh.Pop()
+	// }
+	mh.Reassign(3, 9)
 	fmt.Println(time.Now().Sub(t1))
 	fmt.Println(mh)
 }
