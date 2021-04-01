@@ -28,7 +28,7 @@ func (u unionSet) findFather(n *int) *int {
 		queue.PushBack(n)
 		n = u.parents[n]
 	}
-	for queue.Len() > 0 {
+	for queue.Len() > 0 { // optimize height of union set
 		e := queue.Front()
 		u.parents[e.Value.(*int)] = n
 		queue.Remove(e)
@@ -56,7 +56,7 @@ func (u unionSet) union(a, b int) {
 	if aHead != bHead {
 		sizeA := u.size[aHead]
 		sizeB := u.size[bHead]
-		if sizeA > sizeB {
+		if sizeA > sizeB { // merge small size to big size union set to minimize the amount of node to be optimized in findFather method
 			u.parents[bHead] = aHead
 			u.size[aHead] = sizeA + sizeB
 			delete(u.size, bHead)
