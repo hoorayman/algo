@@ -5,24 +5,28 @@ import (
 	"fmt"
 )
 
-type unionSet struct {
-	nodes   map[int]*int  // nodes make a pointer which stands for a node
-	parents map[*int]*int // stand for node's parent
-	size    map[*int]int  // a node can be in size only if it is a head node
+type element struct {
+	value interface{}
 }
 
-func NewUnionSet(nodes ...int) unionSet {
-	result := unionSet{nodes: make(map[int]*int), parents: make(map[*int]*int), size: make(map[*int]int)}
+type unionSet struct {
+	nodes   map[interface{}]*element // nodes make a poelementer which stands for a node
+	parents map[*element]*element    // stand for node's parent
+	size    map[*element]int         // a node can be in size only if it is a head node
+}
+
+func newUnionSet(nodes ...interface{}) unionSet {
+	result := unionSet{nodes: make(map[interface{}]*element), parents: make(map[*element]*element), size: make(map[*element]int)}
 	for _, v := range nodes {
-		n := v
-		result.nodes[n] = &n
-		result.parents[&n] = &n
-		result.size[&n] = 1
+		e := element{v}
+		result.nodes[v] = &e
+		result.parents[&e] = &e
+		result.size[&e] = 1
 	}
 	return result
 }
 
-func (u unionSet) findFather(n *int) *int {
+func (u unionSet) findFather(n *element) *element {
 	queue := list.New()
 	for n != u.parents[n] {
 		queue.PushBack(n)
@@ -30,13 +34,13 @@ func (u unionSet) findFather(n *int) *int {
 	}
 	for queue.Len() > 0 { // optimize height of union set
 		e := queue.Front()
-		u.parents[e.Value.(*int)] = n
+		u.parents[e.Value.(*element)] = n
 		queue.Remove(e)
 	}
 	return n
 }
 
-func (u unionSet) isSameSet(a, b int) bool {
+func (u unionSet) isSameSet(a, b interface{}) bool {
 	na, naOK := u.nodes[a]
 	nb, nbOK := u.nodes[b]
 	if naOK == false || nbOK == false {
@@ -45,7 +49,7 @@ func (u unionSet) isSameSet(a, b int) bool {
 	return u.findFather(na) == u.findFather(nb)
 }
 
-func (u unionSet) union(a, b int) {
+func (u unionSet) union(a, b interface{}) {
 	na, naOK := u.nodes[a]
 	nb, nbOK := u.nodes[b]
 	if naOK == false || nbOK == false {
@@ -69,10 +73,10 @@ func (u unionSet) union(a, b int) {
 }
 
 func main() {
-	u := NewUnionSet(1, 2, 3, 4, 5, 6, 7, 8)
+	u := newUnionSet(1, 2, 3, 4, 5, 6, 7, 8)
 	fmt.Println(u.isSameSet(2, 3))
 	u.union(2, 3)
 	u.union(4, 5)
 	u.union(2, 5)
-	fmt.Println(u.isSameSet(2, 3))
+	fmt.Println(u.isSameSet(3, 5))
 }
