@@ -133,6 +133,138 @@ func (g graph) topologySort() []int {
 	return result
 }
 
+type minHeap struct {
+	heap    []interface{}
+	compare func(interface{}, interface{}) int
+}
+
+func (h *minHeap) pushBack(e interface{}) {
+	h.heap = append(h.heap, e)
+	i := len(h.heap) - 1
+	for j := (i - 1) / 2; j != i; j = (i - 1) / 2 {
+		if h.compare(h.heap[j], h.heap[i]) > 0 {
+			h.heap[j], h.heap[i] = h.heap[i], h.heap[j]
+		}
+		i = j
+	}
+}
+
+func (h *minHeap) popFirst() interface{} {
+	if len(h.heap) == 0 {
+		return nil
+	}
+	result := h.heap[0]
+	h.heap[0], h.heap[len(h.heap)-1] = h.heap[len(h.heap)-1], h.heap[0]
+	h.heap = h.heap[:len(h.heap)-1]
+	for i := 0; 2*i+1 < len(h.heap); { // heapify
+		min := 2*i + 1
+		if 2*i+2 < len(h.heap) && h.compare(h.heap[2*i+2], h.heap[2*i+1]) < 0 {
+			min = 2*i + 2
+		}
+		if h.compare(h.heap[i], h.heap[min]) > 0 {
+			h.heap[i], h.heap[min] = h.heap[min], h.heap[i]
+			i = min
+		} else {
+			break
+		}
+	}
+	return result
+}
+
+func compare(i, j interface{}) int {
+	return i.(*edge).weight - j.(*edge).weight
+}
+
+func newMinHeap(f func(interface{}, interface{}) int) *minHeap {
+	return &minHeap{heap: make([]interface{}, 0), compare: f}
+}
+
+type unionSet struct {
+	parents map[interface{}]interface{}
+	size    map[interface{}]int // set的头节点下挂的所有节点的个数（包括头节点自己）。注意size只存头节点！
+}
+
+func (u *unionSet) findFather(a interface{}) interface{} {
+	queue := list.New()
+	for u.parents[a] != a {
+		queue.PushBack(a)
+		a = u.parents[a]
+	}
+	for queue.Len() > 0 {
+		e := queue.Front()
+		n := e.Value.(interface{})
+		u.parents[n] = a
+		queue.Remove(e)
+	}
+	return a
+}
+
+func (u *unionSet) isSameSet(a, b interface{}) bool {
+	if _, ok := u.parents[a]; !ok {
+		return false
+	}
+	if _, ok := u.parents[b]; !ok {
+		return false
+	}
+	return u.findFather(a) == u.findFather(b)
+}
+
+func (u *unionSet) union(a, b interface{}) {
+	if _, ok := u.parents[a]; !ok {
+		return
+	}
+	if _, ok := u.parents[b]; !ok {
+		return
+	}
+	ha, hb := u.findFather(a), u.findFather(b)
+	if ha == hb {
+		return
+	}
+	sizeA, sizeB := u.size[ha], u.size[hb]
+	if sizeA >= sizeB {
+		u.parents[hb] = ha
+		u.size[ha] = sizeA + sizeB
+		delete(u.size, hb)
+	} else {
+		u.parents[ha] = hb
+		u.size[hb] = sizeA + sizeB
+		delete(u.size, ha)
+	}
+}
+
+func newUnionSet(e ...interface{}) *unionSet {
+	u := unionSet{parents: make(map[interface{}]interface{}), size: make(map[interface{}]int)}
+	for _, v := range e {
+		u.parents[v] = v
+		u.size[v] = 1
+	}
+	return &u
+}
+
+// 最小生成树kruskal算法。也就是k算法。最小生成树就是用权重最小的边连通各node。
+func (g graph) kruskal() map[*edge]struct{} {
+	h := newMinHeap(compare) // 为了根据权重给边排序
+	for e, _ := range g.edges {
+		h.pushBack(e)
+	}
+	var nodes []interface{}
+	for _, n := range g.nodes {
+		nodes = append(nodes, n)
+	}
+	u := newUnionSet(nodes...) // 为了判断node之间的连通性
+
+	result := make(map[*edge]struct{})
+	e := h.popFirst()
+	for e != nil {
+		if !u.isSameSet(e.(*edge).from, e.(*edge).to) {
+			result[e.(*edge)] = struct{}{}
+			u.union(e.(*edge).from, e.(*edge).to)
+		}
+		e = h.popFirst()
+	}
+	return result
+}
+
 func main() {
 	g := newGraph([][3]int{{1, 2, 3}, {4, 3, 6}, {4, 6, 5}, {4, 3, 7}})
 	fmt.Println("宽度优先遍历：")
@@ -140,4 +272,5 @@ func main() {
 	fmt.Println("深度优先遍历：")
 	g.deep(2)
 	fmt.Println("拓扑排序：", g.topologySort())
+	fmt.Println("kruskal最小生成树：", g.kruskal())
 }
