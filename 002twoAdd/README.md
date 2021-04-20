@@ -28,7 +28,3 @@
 每个链表中的节点数在范围 [1, 100] 内
 0 <= Node.val <= 9
 题目数据保证列表表示的数字不含前导零
-
-来源：力扣（LeetCode）
-链接：https://leetcode-cn.com/problems/add-two-numbers
-著作权归领扣网络所有。商业转载请联系官方授权，非商业转载请注明出处。
