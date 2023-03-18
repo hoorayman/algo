@@ -27,11 +27,10 @@ func longestPalindrome(s string) string {
 }
 
 func isPalindrome(s []byte) bool {
-	for i, j := 0, len(s)-1; i < j; i++ {
+	for i, j := 0, len(s)-1; i < j; i, j = i+1, j-1 {
 		if s[i] != s[j] {
 			return false
 		}
-		j--
 	}
 
 	return true
