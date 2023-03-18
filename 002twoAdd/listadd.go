@@ -55,6 +55,71 @@ func listAdd(a, b []int) []int {
 	return result
 }
 
+type ListNode struct {
+	Val  int
+	Next *ListNode
+}
+
+func addTwoNumbers(l1 *ListNode, l2 *ListNode) *ListNode {
+	carry := 0
+	var result, tail *ListNode
+	p1, p2 := l1, l2
+	for ; p1 != nil && p2 != nil; p1, p2 = p1.Next, p2.Next {
+		val := p1.Val + p2.Val + carry
+		if val > 9 {
+			carry = 1
+			val -= 10
+		} else {
+			carry = 0
+		}
+		if result == nil {
+			result = &ListNode{Val: val}
+			tail = result
+		} else {
+			tail.Next = &ListNode{Val: val}
+			tail = tail.Next
+		}
+	}
+	for ; p1 != nil; p1 = p1.Next {
+		val := p1.Val + carry
+		if val > 9 {
+			carry = 1
+			val -= 10
+		} else {
+			carry = 0
+		}
+		if result == nil {
+			result = &ListNode{Val: val}
+			tail = result
+		} else {
+			tail.Next = &ListNode{Val: val}
+			tail = tail.Next
+		}
+	}
+	for ; p2 != nil; p2 = p2.Next {
+		val := p2.Val + carry
+		if val > 9 {
+			carry = 1
+			val -= 10
+		} else {
+			carry = 0
+		}
+		if result == nil {
+			result = &ListNode{Val: val}
+			tail = result
+		} else {
+			tail.Next = &ListNode{Val: val}
+			tail = tail.Next
+		}
+	}
+	if carry == 1 {
+		tail.Next = &ListNode{Val: 1}
+		tail = tail.Next
+	}
+
+	return result
+}
+
 func main() {
 	a, b := list.New(), list.New()
 	a.PushBack(7)
