@@ -13,7 +13,7 @@ func reverse(x int) int {
 	var result int32
 	y := int32(x)
 	for y != 0 {
-		if result < minInt32/10 || result == minInt32/10 && (result*10+y%10) > 0 { // overflow
+		if result < minInt32/10 || result == minInt32/10 && (result*10+y%10) >= 0 { // overflow
 			return 0
 		}
 		result = result*10 + y%10
